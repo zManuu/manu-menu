@@ -7,7 +7,14 @@ interface IMenu {
      */
     selectedIndex: number
 
+    /**
+     * Will be displayed under the menu title in a smaller, gray, italic font.
+     */
     subtitle?: string
+
+    /**
+     * Defaults to #64748b.
+     */
     highlightColor?: string
 }
 
