@@ -1,4 +1,5 @@
 <template>
+  <!-- input -->
   <div
     v-if="selectedItem"
     class="flex justify-center items-center w-screen h-screen bg-black bg-opacity-50"
@@ -15,11 +16,79 @@
       >
     </div>
   </div>
+  <!-- menu -->
   <div
     v-else-if="menu && !selectedItem"
   >
     <div
-      class="fixed right-3 top-3 bg-gray-800 border-gray-700 border-2 rounded text-white select-none p-2"
+      class="fixed left-3 top-3 text-white select-none"
+    >
+      <div
+        class="bg-gray-800 border-gray-700 border-2 rounded w-[17.5rem] py-2 text-center"
+      >
+        <h1
+          class="text-lg"
+        >
+          {{ getTitle() }}
+        </h1>
+        <h1
+          v-if="menu.subtitle"
+          class="text-gray-400 italic"
+        >
+          {{ menu.subtitle }}
+        </h1>
+        <div
+          class="flex flex-col mt-2"
+        >
+          <div
+            v-for="item in getVisibleItems()"
+            :key="item.id"
+            class="flex flex-row justify-around items-center"
+            :style="getStyle(item)"
+          >
+            <icon
+              v-if="item.leftIcon"
+              :icon="item.leftIcon"
+            />
+            <div
+              v-if="item.type == 'select'"
+              class="flex flex-row items-center gap-3"
+            >
+              <icon icon="arrow-left" />
+              <h1>
+                {{ typeof item.selectedOption == 'string'
+                  ? item.selectedOption
+                  : item.selectedOption?.name }}
+              </h1>
+              <icon icon="arrow-right" />
+            </div>
+            <h1
+              v-else
+            >
+              {{ item.name }}
+            </h1>
+            <icon
+              v-if="item.rightIcon"
+              :icon="item.rightIcon"
+            />
+          </div>
+        </div>
+      </div>
+      <!-- preview image -->
+      <div
+        v-if="menu && menu.selected && menu.selected.type == 'select' && menu.selected.selectedOption && typeof menu.selected.selectedOption == 'object' && menu.selected.selectedOption.imgSrc"
+        class="max-w-full p-5 m-auto bg-gray-800 border-gray-700 rounded border-2 mt-3 flex flex-col items-center"
+      >
+        <h1>Vorschau: {{ menu.selected.selectedOption.name }}</h1>
+        <img
+          class="max-w-[50%]"
+          :src="menu.selected.selectedOption.imgSrc"
+        >
+      </div>
+    </div>
+    <!-- keys -->
+    <div
+      class="fixed right-3 top-3 text-white select-none bg-gray-800 border-gray-700 border-2 rounded p-2"
     >
       <div
         v-for="(item, index) in keyControls"
@@ -32,53 +101,6 @@
         >
           {{ item.text }}
         </h1>
-      </div>
-    </div>
-    <div
-      class="fixed left-3 top-3 bg-gray-800 border-gray-700 border-2 rounded text-white w-[17.5rem] py-2 text-center select-none"
-    >
-      <h1
-        class="text-lg"
-      >
-        {{ getTitle() }}
-      </h1>
-      <h1
-        v-if="menu.subtitle"
-        class="text-gray-400 italic"
-      >
-        {{ menu.subtitle }}
-      </h1>
-      <div
-        class="flex flex-col mt-2"
-      >
-        <div
-          v-for="item in getVisibleItems()"
-          :key="item.id"
-          class="flex flex-row justify-around items-center"
-          :style="getStyle(item)"
-        >
-          <icon
-            v-if="item.leftIcon"
-            :icon="item.leftIcon"
-          />
-          <div
-            v-if="item.type == 'select'"
-            class="flex flex-row items-center gap-3"
-          >
-            <icon icon="arrow-left" />
-            <h1>{{ item.selectedOption }}</h1>
-            <icon icon="arrow-right" />
-          </div>
-          <h1
-            v-else
-          >
-            {{ item.name }}
-          </h1>
-          <icon
-            v-if="item.rightIcon"
-            :icon="item.rightIcon"
-          />
-        </div>
       </div>
     </div>
   </div>

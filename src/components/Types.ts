@@ -1,3 +1,5 @@
+type SelectOption = string | { name: string, imgSrc: string }
+
 interface IMenu {
     title: string
     items: IMenuItem[]
@@ -45,13 +47,13 @@ interface IMenuItem {
     /**
      * Applies only if type is set to 'select'.
      */
-    selectOptions?: string[]
+    selectOptions?: SelectOption[]
 
     /**
      * Applies only if type is set to 'select'.
      * Will be set automatically to the 1. selectOption on mount.
      */
-    selectedOption?: string
+    selectedOption?: SelectOption
 
     /**
      * Applies only if type is set to 'input'. After the item is clicked, an input field with open with this as a title.
@@ -70,6 +72,7 @@ interface IMenuController {
 }
 
 export {
+    SelectOption,
     IMenu,
     IMenuItem,
     IMenuController

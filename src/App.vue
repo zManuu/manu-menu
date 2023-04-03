@@ -20,7 +20,16 @@ const testMenu: IMenu = {
     return {
       name: `Item ${e}`,
       type: 'select',
-      selectOptions: ['option A', 'option B', 'option C', 'option D']
+      selectOptions: [
+        {
+          name: 'Geld',
+          imgSrc: 'https://cdn-icons-png.flaticon.com/128/2704/2704332.png'
+        },
+        {
+          name: 'Schaufel',
+          imgSrc: 'https://cdn-icons-png.flaticon.com/128/1862/1862573.png'
+        }
+      ]
     }
   })
 }
