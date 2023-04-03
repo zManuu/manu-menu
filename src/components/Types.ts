@@ -1,11 +1,11 @@
 interface IMenu {
     title: string
     items: IMenuItem[]
-
+    
     /**
-     * Set it to 0 when initializing a menu.
+     * !Not to be mixed up with the MenuControllers selectedItem prop. This prop represents the 'hovered' item wherease selectedItem will store input items when they are opened.
      */
-    selectedIndex: number
+    selected?: IMenuItem,
 
     /**
      * Will be displayed under the menu title in a smaller, gray, italic font.
@@ -26,6 +26,11 @@ interface IMenuItem {
      * Can be ignored for select inputs as the selected option will show up as the name. Just set it to an empty string in that case.
      */
     name: string
+
+    /**
+     * Will be applied automatically! Don't set.
+     */
+    id?: number
 
     /**
      * Will add a badge to the right (font-awesome).

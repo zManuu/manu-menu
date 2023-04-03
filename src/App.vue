@@ -11,38 +11,18 @@ import { IMenu, IMenuController } from './components/Types'
 
 /**
  * ! Test Menu
+ * ! You can test here
  */
 const testMenu: IMenu = {
   title: 'ManuMenu',
   subtitle: 'Subtitle',
-  selectedIndex: 3,
-  highlightColor: '#14b8a6',
-  items: [
-    {
-      name: 'Test Button',
-      type: 'button'
-    },
-    {
-      name: 'Test Input',
-      type: 'input',
-      inputTitle: 'Whats your favourite color?'
-    },
-    {
-      name: 'Test Select',
+  items: [...Array(56).keys()].map((e: number) => {
+    return {
+      name: `Item ${e}`,
       type: 'select',
-      selectOptions: [
-        'Item 1',
-        'Item 2',
-        'Item 3'
-      ]
-    },
-    {
-      name: 'Styled',
-      type: 'button',
-      leftIcon: 'arrow-right',
-      rightIcon: 'check'
+      selectOptions: ['option A', 'option B', 'option C', 'option D']
     }
-  ]
+  })
 }
 
 export default defineComponent({

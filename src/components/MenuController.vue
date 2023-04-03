@@ -17,49 +17,68 @@
   </div>
   <div
     v-else-if="menu && !selectedItem"
-    class="fixed left-3 top-3 bg-gray-800 border-gray-700 border-2 rounded text-white w-[17.5rem] py-2 text-center select-none"
   >
-    <h1
-      class="text-lg"
-    >
-      {{ menu.title }}
-    </h1>
-    <h1
-      v-if="menu.subtitle"
-      class="text-gray-400 italic"
-    >
-      {{ menu.subtitle }}
-    </h1>
     <div
-      class="flex flex-col mt-2"
+      class="fixed right-3 top-3 bg-gray-800 border-gray-700 border-2 rounded text-white select-none p-2"
     >
       <div
-        v-for="(item, index) in menu.items"
+        v-for="(item, index) in keyControls"
         :key="index"
-        class="flex flex-row justify-around items-center"
-        :style="getStyle(index)"
+        class="flex justify-between items-center gap-5"
       >
-        <icon
-          v-if="item.leftIcon"
-          :icon="item.leftIcon"
-        />
-        <div
-          v-if="item.type == 'select'"
-          class="flex flex-row items-center gap-3"
-        >
-          <icon icon="arrow-left" />
-          <h1>{{ item.selectedOption }}</h1>
-          <icon icon="arrow-right" />
-        </div>
+        <h1>{{ item.key }}</h1>
         <h1
-          v-else
+          class="text-gray-400 italic"
         >
-          {{ item.name }}
+          {{ item.text }}
         </h1>
-        <icon
-          v-if="item.rightIcon"
-          :icon="item.rightIcon"
-        />
+      </div>
+    </div>
+    <div
+      class="fixed left-3 top-3 bg-gray-800 border-gray-700 border-2 rounded text-white w-[17.5rem] py-2 text-center select-none"
+    >
+      <h1
+        class="text-lg"
+      >
+        {{ getTitle() }}
+      </h1>
+      <h1
+        v-if="menu.subtitle"
+        class="text-gray-400 italic"
+      >
+        {{ menu.subtitle }}
+      </h1>
+      <div
+        class="flex flex-col mt-2"
+      >
+        <div
+          v-for="item in getVisibleItems()"
+          :key="item.id"
+          class="flex flex-row justify-around items-center"
+          :style="getStyle(item)"
+        >
+          <icon
+            v-if="item.leftIcon"
+            :icon="item.leftIcon"
+          />
+          <div
+            v-if="item.type == 'select'"
+            class="flex flex-row items-center gap-3"
+          >
+            <icon icon="arrow-left" />
+            <h1>{{ item.selectedOption }}</h1>
+            <icon icon="arrow-right" />
+          </div>
+          <h1
+            v-else
+          >
+            {{ item.name }}
+          </h1>
+          <icon
+            v-if="item.rightIcon"
+            :icon="item.rightIcon"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -70,13 +89,16 @@ import { defineComponent } from 'vue'
 import { IMenu, IMenuItem } from './Types'
 
 const SELECT_EMIT = 'select'
+const MAX_ITEMS = 20
 
 const KEYS = {
   ArrowLeft: 37,
   ArrowRight: 39,
   ArrowUp: 38,
   ArrowDown: 40,
-  Enter: 13
+  Enter: 13,
+  PageUp: 33,
+  PageDown: 34
 }
 
 export default defineComponent({
@@ -84,7 +106,17 @@ export default defineComponent({
     return {
       menu: undefined as IMenu | undefined,
       selectedItem: undefined as IMenuItem | undefined,
-      input: undefined as string | undefined
+      input: undefined as string | undefined,
+      page: 0,
+      keyControls: [
+        { key: 'Pfeil hoch', text: 'Letztes item (hoch)' },
+        { key: 'Pfeil runter', text: 'Nächstes item (runter)' },
+        { key: 'Pfeil links', text: 'Letzte option (links)' },
+        { key: 'Pfeil rechts', text: 'Nächste option (rechts)' },
+        { key: 'Enter', text: 'Item auswählen' },
+        { key: 'Seite hoch', text: 'Letzte Seite' },
+        { key: 'Seite runter', text: 'Nächste Seite' }
+      ]
     }
   },
   mounted() {
@@ -106,7 +138,11 @@ export default defineComponent({
       this.menu = menu
 
       // set default options for select items
-      for (const item of menu.items) {
+      for (let i=0; i<this.menu.items.length; i++) {
+        const item = this.menu.items[i]
+
+        item.id = i
+
         if (item.type != 'select')
           continue
 
@@ -117,19 +153,46 @@ export default defineComponent({
 
         item.selectedOption = item.selectOptions[0]
       }
+
+      menu.selected = menu.items[0]
     },
-    getStyle(index: number) {
-      return this.menu?.selectedIndex == index
+    getPages() {
+      return !this.menu
+        ? 0
+        : Math.round(this.menu.items.length / MAX_ITEMS)
+    },
+    getTitle() {
+      return !this.menu
+        ? ''
+        : this.menu.items.length <= MAX_ITEMS
+          ? this.menu.title
+          : `${this.menu.title} (${this.page + 1}/${this.getPages()})`
+    },
+    getVisibleItems(): IMenuItem[] {
+      if (!this.menu
+        || this.menu.items.length == 0)
+        return []
+
+      if (this.menu.items.length <= MAX_ITEMS)
+        return this.menu.items
+
+      const r = [] as IMenuItem[]
+      for (let i=0; i<MAX_ITEMS; i++) {
+        const index = i + this.page * MAX_ITEMS
+        if (index >= this.menu.items.length)
+          break
+        r.push(this.menu.items[index])
+      }
+      return r
+    },
+    getStyle(item: IMenuItem) {
+      return this.menu?.selected == item
         ? `background: ${this.menu.highlightColor || '#64748b'};`
         : ''
     },
-    getCrntItem() {
-      if (!this.menu)
-        return undefined
-      return this.menu.items[this.menu.selectedIndex]
-    },
     handleKeyEvent(ev: KeyboardEvent | number) {
-      if (!this.menu)
+      if (!this.menu
+        || !this.menu.selected)
         return
 
       const keyCode = typeof ev == 'number'
@@ -138,7 +201,7 @@ export default defineComponent({
 
       // item won't be null due to check for menu
       // if there is a menu, there will always be a selected item
-      const item = this.getCrntItem() as NonNullable<IMenuItem>
+      const item = this.menu.selected as NonNullable<IMenuItem>
 
       switch (keyCode) {
         case KEYS.ArrowLeft: {
@@ -170,28 +233,56 @@ export default defineComponent({
           break
         }
         case KEYS.ArrowUp: {
-          if (this.menu.selectedIndex == 0)
+          const visibleItems = this.getVisibleItems()
+          const firstItemOnPage = visibleItems[0]
+
+          if (this.menu.selected == firstItemOnPage)
             break
           
-          this.menu.selectedIndex -= 1
+          this.menu.selected = visibleItems[visibleItems.indexOf(this.menu.selected) - 1]
           break
         }
         case KEYS.ArrowDown: {
-          if (this.menu.selectedIndex == this.menu.items.length - 1)
+          const visibleItems = this.getVisibleItems()
+          const lastItemOnPage = visibleItems[visibleItems.length - 1]
+
+          if (this.menu.selected == lastItemOnPage)
             break
           
-          this.menu.selectedIndex += 1
+          this.menu.selected = visibleItems[visibleItems.indexOf(this.menu.selected) + 1]
           break
         }
         case KEYS.Enter: {
-          this.handleSelect(this.menu.items[this.menu.selectedIndex])
+          this.handleSelect(this.menu.selected)
+          break
+        }
+        case KEYS.PageUp: {
+          if (this.getPages() < 2
+            || this.page == this.getPages() - 1)
+            return
+          
+          this.page++
+          this.menu.selected = this.getVisibleItems()[0]
+          break
+        }
+        case KEYS.PageDown: {
+          if (this.getPages() < 2
+            || this.page == 0)
+            return
+          
+          this.page--
+          this.menu.selected = this.getVisibleItems()[this.getVisibleItems().length - 1]
           break
         }
       }
     },
     emit(eventName: string, ...args: unknown[]) {
-      // @ts-expect-error alt isn't available in plain html types
-      window.alt?.emit(eventName, ...args)
+      if ('alt' in window) {
+        // @ts-expect-error alt isn't available in plain html types
+        window.alt?.emit(eventName, ...args)
+      } else {
+        console.log(`[EMIT] ${eventName}: ${args.join(',')}`)
+      }
     },
     handleSelect(item: IMenuItem) {
       switch (item.type) {
@@ -217,6 +308,7 @@ export default defineComponent({
     handleInputSubmit() {
       this.emit(SELECT_EMIT, this.selectedItem?.name, this.input)
       this.selectedItem = undefined
+      this.input = undefined
     }
   },
 })
