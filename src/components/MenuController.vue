@@ -312,7 +312,13 @@ export default defineComponent({
           this.emit(SELECT_EMIT, item.name)
           break
         case 'select':
-          this.emit(SELECT_EMIT, item.name, item.selectedOption)
+          this.emit(
+            SELECT_EMIT,
+            item.name,
+            typeof item.selectedOption == 'string'
+              ? item.selectedOption
+              : item.selectedOption?.name
+          )
           break
         case 'input':
           if (this.selectedItem) {
