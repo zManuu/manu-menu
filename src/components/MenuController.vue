@@ -110,8 +110,14 @@
 import { defineComponent } from 'vue'
 import { IMenu, IMenuItem } from './Types'
 
-const SELECT_EMIT = 'select'
 const MAX_ITEMS = 20
+
+const EMITS = {
+  SELECT: 'select',
+  HOVER: 'hover',
+  CHANGESELECTION: 'changeselection',
+  CHANGESITE: 'changesite'
+}
 
 const KEYS = {
   ArrowLeft: 37,
@@ -238,6 +244,16 @@ export default defineComponent({
             break
 
           item.selectedOption = item.selectOptions[crntIndex - 1]
+
+          this.emit(
+            EMITS.CHANGESELECTION,
+            'left',
+            crntIndex - 1,
+            item.name,
+            typeof item.selectedOption == 'string'
+              ? item.selectedOption
+              : item.selectedOption?.name
+          )
           break
         }
         case KEYS.ArrowRight: {
@@ -252,6 +268,16 @@ export default defineComponent({
             break
 
           item.selectedOption = item.selectOptions[crntIndex + 1]
+
+          this.emit(
+            EMITS.CHANGESELECTION,
+            'right',
+            crntIndex + 1,
+            item.name,
+            typeof item.selectedOption == 'string'
+              ? item.selectedOption
+              : item.selectedOption?.name
+          )
           break
         }
         case KEYS.ArrowUp: {
@@ -262,6 +288,11 @@ export default defineComponent({
             break
           
           this.menu.selected = visibleItems[visibleItems.indexOf(this.menu.selected) - 1]
+
+          this.emit(
+            EMITS.HOVER,
+            this.menu.selected.name
+          )
           break
         }
         case KEYS.ArrowDown: {
@@ -272,6 +303,11 @@ export default defineComponent({
             break
           
           this.menu.selected = visibleItems[visibleItems.indexOf(this.menu.selected) + 1]
+
+          this.emit(
+            EMITS.HOVER,
+            this.menu.selected.name
+          )
           break
         }
         case KEYS.Enter: {
@@ -285,6 +321,8 @@ export default defineComponent({
           
           this.page++
           this.menu.selected = this.getVisibleItems()[0]
+
+          this.emit(EMITS.CHANGESITE, 'up', this.page)
           break
         }
         case KEYS.PageDown: {
@@ -294,6 +332,8 @@ export default defineComponent({
           
           this.page--
           this.menu.selected = this.getVisibleItems()[this.getVisibleItems().length - 1]
+
+          this.emit(EMITS.CHANGESITE, 'down', this.page)
           break
         }
       }
@@ -309,11 +349,11 @@ export default defineComponent({
     handleSelect(item: IMenuItem) {
       switch (item.type) {
         case 'button':
-          this.emit(SELECT_EMIT, item.name)
+          this.emit(EMITS.SELECT, item.name)
           break
         case 'select':
           this.emit(
-            SELECT_EMIT,
+            EMITS.SELECT,
             item.name,
             typeof item.selectedOption == 'string'
               ? item.selectedOption
@@ -334,7 +374,7 @@ export default defineComponent({
       }
     },
     handleInputSubmit() {
-      this.emit(SELECT_EMIT, this.selectedItem?.name, this.input)
+      this.emit(EMITS.SELECT, this.selectedItem?.name, this.input)
       this.selectedItem = undefined
       this.input = undefined
     }
